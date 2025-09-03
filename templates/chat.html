@@ -25,7 +25,7 @@
             {% for message in messages %}
                 <div class="message {{ message.role }}">
                     <div class="message-content">
-                        {{ message.content }}
+                        {{ message.content|safe }}
                     </div>
                     <div class="message-time">
                         {{ message.timestamp|datetimeformat }}
@@ -42,7 +42,20 @@
     </div>
 </div>
 
+<!-- Include marked.js for markdown parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/5.1.1/marked.min.js"></script>
 <script>
+    // Configure marked options for better security and formatting
+    marked.setOptions({
+        breaks: true,
+        gfm: true,
+        sanitize: false, // We'll handle sanitization server-side
+        highlight: function(code, lang) {
+            // Basic syntax highlighting could be added here
+            return code;
+        }
+    });
+
     document.getElementById('message-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -53,15 +66,19 @@
         const messagesDiv = document.getElementById('messages');
         
         if (!message) return;
+        
+        // Add user message
         const userMessageDiv = document.createElement('div');
         userMessageDiv.className = 'message user';
         userMessageDiv.innerHTML = `
-            <div class="message-content">${message}</div>
+            <div class="message-content">${escapeHtml(message)}</div>
             <div class="message-time">Just now</div>
         `;
         messagesDiv.appendChild(userMessageDiv);
         messageInput.value = '';
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        // Add loading indicator
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'message assistant loading';
         loadingDiv.innerHTML = '<div class="message-content">Thinking...</div>';
@@ -82,14 +99,21 @@
             
             const data = await response.json();
             messagesDiv.removeChild(loadingDiv);
+            
+            // Render markdown content
             const aiMessageDiv = document.createElement('div');
             aiMessageDiv.className = 'message assistant';
+            
+            // Parse markdown and render as HTML
+            const renderedContent = marked.parse(data.response);
+            
             aiMessageDiv.innerHTML = `
-                <div class="message-content">${data.response}</div>
+                <div class="message-content">${renderedContent}</div>
                 <div class="message-time">Just now</div>
             `;
             messagesDiv.appendChild(aiMessageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
         } catch (error) {
             console.error('Error:', error);
             messagesDiv.removeChild(loadingDiv);
@@ -100,5 +124,111 @@
             messagesDiv.appendChild(errorDiv);
         }
     });
+    
+    // Helper function to escape HTML for user input
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 </script>
+
+<style>
+/* Additional CSS for better markdown rendering */
+.message-content {
+    word-wrap: break-word;
+    line-height: 1.6;
+}
+
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4,
+.message-content h5,
+.message-content h6 {
+    margin: 0.5em 0;
+    font-weight: bold;
+}
+
+.message-content h1 { font-size: 1.5em; }
+.message-content h2 { font-size: 1.3em; }
+.message-content h3 { font-size: 1.1em; }
+
+.message-content p {
+    margin: 0.5em 0;
+}
+
+.message-content ul,
+.message-content ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
+
+.message-content li {
+    margin: 0.2em 0;
+}
+
+.message-content code {
+    background-color: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.message-content pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.message-content pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.message-content blockquote {
+    border-left: 4px solid #ddd;
+    margin: 0.5em 0;
+    padding-left: 1em;
+    color: #666;
+}
+
+.message-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5em 0;
+}
+
+.message-content th,
+.message-content td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.message-content th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.message-content strong {
+    font-weight: bold;
+}
+
+.message-content em {
+    font-style: italic;
+}
+
+.message-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.message-content a:hover {
+    text-decoration: underline;
+}
+</style>
 {% endblock %}
