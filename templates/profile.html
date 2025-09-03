@@ -1,77 +1,359 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="profile-container">
-    <h2>Customize Your Chatbot</h2>
-    <form method="post" action="{{ url_for('update_profile') }}">
-        <!-- Language Selection -->
-        <div class="form-group">
-            <label>Preferred Language</label>
-            <select name="language" class="form-control">
-                {% for code, name in LANGUAGES.items() %}
-                    <option value="{{ code }}" {% if user.language == code %}selected{% endif %}>{{ name }}</option>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Customization</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #f1f1f1;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .back-button:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            fill: #555;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 600;
+            padding-top: 10px;
+        }
+        
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f9f9f9;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #4a4a4a;
+            font-size: 18px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 8px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #6e8efb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(110, 142, 251, 0.2);
+        }
+        
+        .radio-option, .persona-type, .style-option {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        .radio-option:hover, .persona-type:hover, .style-option:hover {
+            border-color: #a777e3;
+            background: #faf7ff;
+        }
+        
+        .option-desc {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+            padding-left: 25px;
+        }
+        
+        .persona-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .persona-type {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110, 142, 251, 0.4);
+        }
+        
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .bold-text {
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #6e8efb;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            .profile-container {
+                padding: 20px;
+            }
+            
+            .form-group {
+                padding: 15px;
+            }
+            
+            .back-button {
+                top: 15px;
+                left: 15px;
+                width: 35px;
+                height: 35px;
+            }
+            
+            h2 {
+                font-size: 24px;
+                padding-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <!-- Back Button -->
+        <button class="back-button" onclick="goBack()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+        </button>
+        
+        <h2>Customize Your Chatbot</h2>
+        
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}
-            </select>
-        </div>
+            {% endif %}
+        {% endwith %}
         
-        <!-- Tone Selection -->
-        <div class="form-group">
-            <label>Communication Tone</label>
-            {% for tone, desc in TONE_PRESETS.items() %}
-                <div class="radio-option">
-                    <input type="radio" name="tone" value="{{ tone }}" 
-                           {% if user.tone == tone %}checked{% endif %}>
-                    <label>{{ tone|title }}</label>
-                    <p class="option-desc">{{ desc }}</p>
-                </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Persona Selection -->
-        <div class="form-group">
-            <label>Chatbot Persona</label>
-            <div class="persona-options">
-                <div class="persona-type">
-                    <input type="radio" name="persona_type" value="predefined" 
-                           {% if user.persona_type != 'custom' %}checked{% endif %}>
-                    <label>Predefined Persona</label>
-                    <select name="persona_key" class="form-control">
-                        {% for key, desc in PREDEFINED_PERSONAS.items() %}
-                            <option value="{{ key }}" {% if user.persona_key == key %}selected{% endif %}>
-                                {{ key|replace('_', ' ')|title }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="persona-type">
-                    <input type="radio" name="persona_type" value="custom"
-                           {% if user.persona_type == 'custom' %}checked{% endif %}>
-                    <label>Custom Persona</label>
-                    <textarea name="custom_persona" class="form-control"
-                              placeholder="Describe how you want the chatbot to speak...">
-                        {{ user.custom_persona or '' }}
-                    </textarea>
-                </div>
+        <form method="post" action="/profile/update">
+            <!-- Language Selection -->
+            <div class="form-group">
+                <label class="section-title">Preferred Language</label>
+                <select name="language" class="form-control">
+                    {% for code, name in LANGUAGES.items() %}
+                        <option value="{{ code }}" {% if user.language == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
             </div>
-        </div>
-        
-        <!-- Explanation Style -->
-        <div class="form-group">
-            <label>Explanation Style</label>
-            <div class="style-options">
-                {% for style, desc in LEARNING_STYLES.items() %}
-                    <div class="style-option">
-                        <input type="radio" name="explanation_style" value="{{ style }}"
-                               {% if user.explanation_style == style %}checked{% endif %}>
-                        <label>{{ style|title }}</label>
+            
+            <!-- Tone Selection -->
+            <div class="form-group">
+                <label class="section-title">Communication Tone</label>
+                {% for tone, desc in TONE_PRESETS.items() %}
+                    <div class="radio-option">
+                        <input type="radio" name="tone" value="{{ tone }}" 
+                               {% if user.tone == tone %}checked{% endif %}>
+                        <label class="bold-text">{{ tone|title }}</label>
                         <p class="option-desc">{{ desc }}</p>
                     </div>
                 {% endfor %}
             </div>
-        </div>
+            
+            <!-- Persona Selection -->
+            <div class="form-group">
+                <label class="section-title">Chatbot Persona</label>
+                <div class="persona-options">
+                    <!-- Chatbot Persona Option -->
+                    <div class="persona-type">
+                        <input type="radio" name="persona_type" value="chatbot" id="chatbot_persona" 
+                               {% if user.persona_type == 'chatbot' %}checked{% endif %}>
+                        <label for="chatbot_persona" class="bold-text">Chatbot Persona</label>
+                        <p class="option-desc">Standard AI assistant persona with balanced characteristics</p>
+                    </div>
+                    
+                    <!-- Predefined Persona Option -->
+                    <div class="persona-type">
+                        <input type="radio" name="persona_type" value="predefined" id="predefined_persona"
+                               {% if user.persona_type == 'predefined' %}checked{% endif %}>
+                        <label for="predefined_persona" class="bold-text">Predefined Persona</label>
+                        <select name="persona_key" class="form-control">
+                            {% for key, desc in PREDEFINED_PERSONAS.items() %}
+                                <option value="{{ key }}" {% if user.persona_key == key %}selected{% endif %}>
+                                    {{ key|replace('_', ' ')|title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Custom Persona Option -->
+                    <div class="persona-type">
+                        <input type="radio" name="persona_type" value="custom" id="custom_persona"
+                               {% if user.persona_type == 'custom' %}checked{% endif %}>
+                        <label for="custom_persona" class="bold-text">Custom Persona</label>
+                        <textarea name="custom_persona" class="form-control"
+                                  placeholder="Describe how you want the chatbot to speak, behave, and respond...">
+                            {{ user.custom_persona or '' }}
+                        </textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Explanation Style -->
+            <div class="form-group">
+                <label class="section-title">Explanation Style</label>
+                <div class="style-options">
+                    {% for style, desc in LEARNING_STYLES.items() %}
+                        <div class="style-option">
+                            <input type="radio" name="explanation_style" value="{{ style }}"
+                                   {% if user.explanation_style == style %}checked{% endif %}>
+                            <label class="bold-text">{{ style|title }}</label>
+                            <p class="option-desc">{{ desc }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn">Save Preferences</button>
+        </form>
+    </div>
+
+    <script>
+        // JavaScript to handle persona selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const personaRadios = document.querySelectorAll('input[name="persona_type"]');
+            const predefinedSelect = document.querySelector('select[name="persona_key"]');
+            const customTextarea = document.querySelector('textarea[name="custom_persona"]');
+            
+            // Function to toggle fields based on selection
+            function togglePersonaFields() {
+                const selectedValue = document.querySelector('input[name="persona_type"]:checked').value;
+                
+                predefinedSelect.disabled = selectedValue !== 'predefined';
+                customTextarea.disabled = selectedValue !== 'custom';
+                
+                // Adjust opacity to indicate disabled state
+                predefinedSelect.style.opacity = predefinedSelect.disabled ? 0.6 : 1;
+                customTextarea.style.opacity = customTextarea.disabled ? 0.6 : 1;
+            }
+            
+            // Add event listeners to all persona radio buttons
+            personaRadios.forEach(radio => {
+                radio.addEventListener('change', togglePersonaFields);
+            });
+            
+            // Initialize on page load
+            togglePersonaFields();
+        });
         
-        <button type="submit" class="btn">Save Preferences</button>
-    </form>
-</div>
+        // Function to go back to previous page
+        function goBack() {
+            // Use browser's history to go back
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // If no history, redirect to a default page (homepage)
+                window.location.href = "/";
+            }
+        }
+    </script>
+</body>
+</html>
 {% endblock %}
