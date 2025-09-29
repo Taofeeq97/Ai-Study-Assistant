@@ -1,0 +1,73 @@
+
+import os
+
+from django.templatetags.static import static
+from django.utils.functional import lazy
+
+from ganafresultmanager.enums import ModuleChoices
+
+ALLOWED_HOSTS = ['*']
+
+DEBUG = True
+
+
+SITE_DOMAIN = "https://app.ospolyportal.com"
+WEB_SERVER_USER = 1000
+WEB_SERVER_GROUP = 33
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "ospolydb",
+        "USER": "ospolyusernew",
+        "PASSWORD": "ospolyprotecteduser",
+        "HOST": "localhost",
+        "PORT": "5432",
+    }
+}
+
+def get_logo_url():
+    return SITE_DOMAIN + static('fresh/assets/img/ospoly.png')
+
+SCHOOL_NAME = 'Osun State Polytechnic, Iree'
+SCHOOL_ADDRESS = 'IREE, OSUN STATE, NIGERIA'
+SCHOOL_SHORT_NAME = 'OSPOLY, IREE'
+lazy_logo_url = lazy(get_logo_url, str)
+LOGO_URL = lazy_logo_url()
+DEFAULT_THEME = 'theme-default'
+BASE_APPLICATION_NUMBER = "OSP"
+
+#SCHOOL_HOME_URL = "https://ospoly.edu.ng"
+SCHOOL_HOME_URL = "https://ospolyportal.com"
+
+
+IS_OSPOLY = True
+IS_OSCHT = False
+HAS_STANDARD_PRICING = True
+ICT_ACCOUNT_ALIAS = "ICT_FUND"
+SMART_SMS_SENDER=''
+
+'''
+['OSP/HND/24/02024', 'OSP/HND/24/01219', 'OSP/HND/24/04334', 'OSP/HND/24/00459', 'OSP/HND/24/02171', 'OSP/HND/24/00389', 
+'OSP/HND/24/00453', 'OSP/HND/24/00589', 'OSP/HND/24/00453', 'OSP/HND/24/03760', 'OSP/HND/24/00591','OSP/HND/24/01045', 'OSP/HND/24/00050',
+'OSP/HND/24/00452', 'OSP/HND/24/00453', 'OSP/HND/24/03717', 'OSP/HND/24/00238']
+
+def reset_password(usernames):
+    for u in usernames:
+        user = User.objects.filter(username=u).first()
+        if user:
+            print(f'attempting reset password for {user}')
+            user.set_password('abcd1234')
+            user.save()
+        else:
+            print(f'user with username {u} does not exist')
+
+
+
+'''
+AWS_STORAGE_BUCKET_NAME = "gsmasbackup"
+AWS_ACCESS_KEY_ID_BACKUP = "AKIAZU27H2ND2SWLAY99"
+AWS_SECRET_ACCESS_KEY_BACKUP = "O2VCQdYSM+2XxBX0gy3yOnuEZpYa8FWeO5d/S1K3"
+AWS_S3_REGION_NAME = 'eu-west-1'
